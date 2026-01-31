@@ -88,7 +88,7 @@ model DocumentChunk {
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   text       String   // Текст чанка
-  embedding  Unsupported("vector(1536)") // OpenAI text-embedding-3-small dimension
+  embedding  Unsupported("vector(1024)") // Mistral mistral-embed-2312 dimension
 
   createdAt  DateTime @default(now())
 

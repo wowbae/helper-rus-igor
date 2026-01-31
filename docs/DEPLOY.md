@@ -166,7 +166,6 @@ TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 
 # OpenAI (опционально)
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_API=https://gptunnel.ru/v1
 ASSISTANT_CODE=your_assistant_code
 ```
 

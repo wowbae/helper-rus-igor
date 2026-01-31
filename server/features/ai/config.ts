@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 export const aiConfig = {
     apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: process.env.OPENROUTER_API || 'https://gptunnel.ru/v1',
+    baseURL: process.env.OPENROUTER_API,
     model: 'gpt-4o-mini',
     temperature: 0.7,
     max_tokens: 150,

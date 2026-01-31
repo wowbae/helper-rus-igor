@@ -1,8 +1,7 @@
 // Векторный поиск через pgvector
 import { prisma } from 'prisma/client';
 import { embed } from 'ai';
-import { customOpenAI } from '../provider';
-import 'dotenv/config';
+import { openrouterProvider } from '../provider';
 
 // Интерфейс результата поиска
 export interface SearchResult {
@@ -13,10 +12,10 @@ export interface SearchResult {
     score: number;
 }
 
-// Создание эмбеддинга для текста через OpenAI
+// Создание эмбеддинга для текста через OpenRouter (Mistral)
 export async function createEmbedding(text: string): Promise<number[]> {
     const { embedding } = await embed({
-        model: customOpenAI.embedding('text-embedding-3-small'),
+        model: openrouterProvider.embedding('mistralai/mistral-embed-2312'),
         value: text,
     });
     return embedding;
@@ -32,7 +31,7 @@ export async function searchKnowledge(
         const embeddingStr = `[${queryEmbedding.join(',')}]`;
 
         const results = await prisma.$queryRawUnsafe<SearchResult[]>(`
-            SELECT 
+            SELECT
                 dc.id,
                 dc.text,
                 dc."documentId",
