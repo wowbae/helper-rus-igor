@@ -14,17 +14,17 @@ model User {
   lastName   String?
   username   String?  // @username в телеграме
   phone      String?  // Контактный телефон
-  
+
   role       Role     @default(user)
   status     UserStatus @default(new) // Статус в воронке
-  
+
   notes      String?  // Заметки о пользователе (потребности, бюджет и тп)
   purchases  String[] @default([]) // История покупок (что покупал)
   source     String?  // Откуда пришёл (реклама, органика, реферал)
-  
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  
+
   // Связи
   messages   Message[]
   settings   Settings?
@@ -35,10 +35,10 @@ model Message {
   id        Int      @id @default(autoincrement())
   userId    String
   user      User     @relation(fields: [userId], references: [telegramId], onDelete: Cascade)
-  
+
   role      MessageRole // user | assistant
   content   String
-  
+
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -49,13 +49,13 @@ model AgentConfig {
   id           Int      @id @default(autoincrement())
   name         String   @default("Помощник")
   systemPrompt String   // Системный промпт
-  model        String   @default("gpt-4o-mini")
+  model        AiModelEnum @default(gpt_4o_mini)
   temperature  Float    @default(0.7)
   isActive     Boolean  @default(true)
-  
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
+
   // Связи
   documents    Document[]
 }
@@ -65,18 +65,18 @@ model Document {
   id        Int      @id @default(autoincrement())
   agentId   Int
   agent     AgentConfig @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  
+
   title     String   // Название документа
   content   String   // Содержимое
   category  String?  // Категория (faq, product, script, local-file)
-  
+
   // Поля для дедупликации локальных файлов
   filePath    String?  @unique // путь к файлу (docs/agent_knowledge/faq.txt)
   contentHash String?  @unique // SHA-256 хеш содержимого
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   // Связь с чанками для RAG
   chunks    DocumentChunk[]
 }
@@ -86,12 +86,12 @@ model DocumentChunk {
   id         String   @id @default(cuid())
   documentId Int
   document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  
+
   text       String   // Текст чанка
   embedding  Unsupported("vector(1536)") // OpenAI text-embedding-3-small dimension
-  
+
   createdAt  DateTime @default(now())
-  
+
   @@map("document_chunks")
 }
 
@@ -130,4 +130,12 @@ enum RoleAi {
   system
   user
   assistant
+}
+
+// Доступные AI модели (маппинг на API названия в server/features/ai/config.ts)
+enum AiModelEnum {
+  gpt_4o              // → gpt-4o
+  gpt_4o_mini         // → gpt-4o-mini
+  gpt_5_nano
+  deepseek_v3_2       // → deepseek/deepseek-v3.2
 }

@@ -96,7 +96,8 @@ async function initAgent() {
                     name: 'Помощник',
                     systemPrompt:
                         'Ты умный ассистент. Используй базу знаний для ответов на вопросы пользователя. Отвечай на том же языке, на котором задан вопрос.',
-                    model: 'gpt-4o-mini',
+                    // модель при создании агента (enum из schema.prisma)
+                    model: 'deepseek_v3_2',
                     temperature: 0.7,
                     isActive: true,
                 },
