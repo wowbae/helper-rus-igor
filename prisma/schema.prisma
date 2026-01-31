@@ -76,6 +76,23 @@ model Document {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Связь с чанками для RAG
+  chunks    DocumentChunk[]
+}
+
+// Чанки документов с эмбеддингами для RAG (pgvector)
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId Int
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  text       String   // Текст чанка
+  embedding  Unsupported("vector(1536)") // OpenAI text-embedding-3-small dimension
+  
+  createdAt  DateTime @default(now())
+  
+  @@map("document_chunks")
 }
 
 // Настройки пользователя

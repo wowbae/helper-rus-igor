@@ -1,7 +1,6 @@
 // Управление документами базы знаний через Telegram
 import { Composer, InlineKeyboard } from 'grammy';
 import { prisma } from 'prisma/client';
-import { deleteDocumentFromUpstash } from '../../../ai/knowledge/sync';
 
 // Actions для callback'ов документов
 export const Actions_Documents = {
@@ -76,11 +75,8 @@ documentsComposer.on('callback_query:data', async (ctx, next) => {
 
         case Actions_Documents.confirm_delete: {
             try {
-                // Удаляем из Prisma
+                // Удаляем из Prisma (чанки удалятся автоматически через CASCADE)
                 await prisma.document.delete({ where: { id: docId } });
-
-                // Удаляем из Upstash
-                await deleteDocumentFromUpstash(docId);
 
                 await ctx.editMessageText('✅ Документ удалён из базы знаний.');
                 await ctx.answerCallbackQuery({ text: 'Удалено' });

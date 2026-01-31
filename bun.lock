@@ -7,7 +7,6 @@
         "@ai-sdk/openai": "^3.0.23",
         "@prisma/adapter-pg": "^7.2.0",
         "@prisma/client": "7",
-        "@upstash/search": "^0.1.7",
         "ai": "^6.0.64",
         "cors": "^2.8.5",
         "dotenv": "^17.2.3",
@@ -550,10 +549,6 @@
     "@types/serve-static": ["@types/serve-static@2.2.0", "", { "dependencies": { "@types/http-errors": "*", "@types/node": "*" } }, "sha512-8mam4H1NHLtu7nmtalF7eyBH14QyOASmcxHhSfEoRyr0nP/YdoesEtU+uSRvMe96TW/HPTtkoKqQLl53N7UXMQ=="],
 
     "@types/use-sync-external-store": ["@types/use-sync-external-store@0.0.6", "", {}, "sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg=="],
-
-    "@upstash/search": ["@upstash/search@0.1.7", "", { "dependencies": { "@upstash/vector": "^1.2.1" } }, "sha512-rgJ52TP0eUPLFo4K6TZtiC7qICbJnEwkT+TqaDI1vN8/Hk6qidgNC9dpnUUXCiqfwogty1rlSyBhYfk6PRgXjA=="],
-
-    "@upstash/vector": ["@upstash/vector@1.2.2", "", {}, "sha512-ptQ9xnxtKqmpNK52PCcHCszlPOLxIBfjsv7ty8RoF95pkjctS9rSjTQ3Pl9bx5VFbpDj+0dMXw88WLt6swDkgQ=="],
 
     "@vercel/nft": ["@vercel/nft@1.3.0", "", { "dependencies": { "@mapbox/node-pre-gyp": "^2.0.0", "@rollup/pluginutils": "^5.1.3", "acorn": "^8.6.0", "acorn-import-attributes": "^1.9.5", "async-sema": "^3.1.1", "bindings": "^1.4.0", "estree-walker": "2.0.2", "glob": "^13.0.0", "graceful-fs": "^4.2.9", "node-gyp-build": "^4.2.2", "picomatch": "^4.0.2", "resolve-from": "^5.0.0" }, "bin": { "nft": "out/cli.js" } }, "sha512-i4EYGkCsIjzu4vorDUbqglZc5eFtQI2syHb++9ZUDm6TU4edVywGpVnYDein35x9sevONOn9/UabfQXuNXtuzQ=="],
 

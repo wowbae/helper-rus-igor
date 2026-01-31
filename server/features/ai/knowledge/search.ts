@@ -1,66 +1,62 @@
-// Upstash Search клиент для RAG
-import { Search, type Index } from '@upstash/search';
+// Векторный поиск через pgvector
+import { prisma } from 'prisma/client';
+import { embed } from 'ai';
+import { customOpenAI } from '../provider';
 import 'dotenv/config';
 
-// Интерфейс содержимого документа в индексе
-export interface KnowledgeContent {
+// Интерфейс результата поиска
+export interface SearchResult {
+    id: string;
     text: string;
-    title: string;
-    category: string | null;
     documentId: number;
+    title: string;
+    score: number;
 }
 
-// Проверка наличия переменных окружения
-export function isUpstashConfigured(): boolean {
-    return !!(
-        process.env.UPSTASH_SEARCH_REST_URL &&
-        process.env.UPSTASH_SEARCH_REST_TOKEN
-    );
+// Создание эмбеддинга для текста через OpenAI
+export async function createEmbedding(text: string): Promise<number[]> {
+    const { embedding } = await embed({
+        model: customOpenAI.embedding('text-embedding-3-small'),
+        value: text,
+    });
+    return embedding;
 }
 
-// Ленивая инициализация клиента (только когда нужен и настроен)
-let _knowledgeIndex: Index<KnowledgeContent> | null = null;
+// Поиск похожих чанков через pgvector (косинусное сходство)
+export async function searchKnowledge(
+    query: string,
+    limit: number = 5
+): Promise<SearchResult[]> {
+    try {
+        const queryEmbedding = await createEmbedding(query);
+        const embeddingStr = `[${queryEmbedding.join(',')}]`;
 
-export function getKnowledgeIndex(): Index<KnowledgeContent> | null {
-    if (!isUpstashConfigured()) {
-        return null;
+        const results = await prisma.$queryRawUnsafe<SearchResult[]>(`
+            SELECT 
+                dc.id,
+                dc.text,
+                dc."documentId",
+                d.title,
+                1 - (dc.embedding <=> '${embeddingStr}'::vector) as score
+            FROM document_chunks dc
+            JOIN "Document" d ON d.id = dc."documentId"
+            ORDER BY dc.embedding <=> '${embeddingStr}'::vector
+            LIMIT ${limit}
+        `);
+
+        return results;
+    } catch (error) {
+        console.error('Ошибка поиска в базе знаний:', error);
+        return [];
     }
-
-    if (!_knowledgeIndex) {
-        const search = new Search({
-            url: process.env.UPSTASH_SEARCH_REST_URL!,
-            token: process.env.UPSTASH_SEARCH_REST_TOKEN!,
-        });
-        _knowledgeIndex = search.index<KnowledgeContent>('knowledge-base');
-    }
-
-    return _knowledgeIndex;
 }
 
-// Для обратной совместимости (выбросит ошибку если не настроен)
-export const knowledgeIndex = {
-    search: async (...args: Parameters<Index<KnowledgeContent>['search']>) => {
-        const index = getKnowledgeIndex();
-        if (!index) {
-            console.warn('⚠️ Upstash Search не настроен, поиск недоступен');
-            return [];
-        }
-        return index.search(...args);
-    },
-    upsert: async (...args: Parameters<Index<KnowledgeContent>['upsert']>) => {
-        const index = getKnowledgeIndex();
-        if (!index) {
-            console.warn('⚠️ Upstash Search не настроен, синхронизация пропущена');
-            return;
-        }
-        return index.upsert(...args);
-    },
-    delete: async (...args: Parameters<Index<KnowledgeContent>['delete']>) => {
-        const index = getKnowledgeIndex();
-        if (!index) {
-            console.warn('⚠️ Upstash Search не настроен, удаление пропущено');
-            return;
-        }
-        return index.delete(...args);
-    },
-};
+// Проверка доступности pgvector
+export async function isPgvectorAvailable(): Promise<boolean> {
+    try {
+        await prisma.$queryRaw`SELECT 1 FROM pg_extension WHERE extname = 'vector'`;
+        return true;
+    } catch {
+        return false;
+    }
+}

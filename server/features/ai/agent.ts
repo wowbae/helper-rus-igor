@@ -1,8 +1,8 @@
-// AI Агент с tool calling для RAG
-import { generateText, tool } from 'ai';
+// AI Агент с tool calling для RAG (pgvector)
+import { generateText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { customOpenAI } from './provider';
-import { knowledgeIndex } from './knowledge/search';
+import { searchKnowledge, type SearchResult } from './knowledge/search';
 import { prisma } from 'prisma/client';
 
 // Опции для запуска агента
@@ -11,10 +11,10 @@ interface AgentOptions {
     agentConfigId?: number;
 }
 
-// Результат поиска в базе знаний
-interface SearchResult {
-    title: string | undefined;
-    text: string | undefined;
+// Результат для tool calling
+interface ToolSearchResult {
+    title: string;
+    text: string;
     score: number;
 }
 
@@ -38,12 +38,12 @@ export async function runAgent(
         model: customOpenAI(agentConfig?.model || 'gpt-4o-mini'),
         system: systemPrompt,
         prompt,
-        maxSteps: 10,
+        stopWhen: stepCountIs(10),
         tools: {
             searchKnowledge: tool({
                 description:
                     'Поиск информации в базе знаний. Используй этот инструмент когда нужно найти информацию о продукте, услугах, FAQ или другие данные.',
-                parameters: z.object({
+                inputSchema: z.object({
                     query: z
                         .string()
                         .describe('Поисковый запрос на естественном языке'),
@@ -53,21 +53,20 @@ export async function runAgent(
                         .default(5)
                         .describe('Количество результатов'),
                 }),
-                execute: async ({ query, limit = 5 }): Promise<string | SearchResult[]> => {
-                    const results = await knowledgeIndex.search({
-                        query,
-                        limit,
-                        reranking: true,
-                    });
+                execute: async ({
+                    query,
+                    limit = 5,
+                }): Promise<string | ToolSearchResult[]> => {
+                    const results = await searchKnowledge(query, limit);
 
                     if (!results.length) {
                         return 'Информация по запросу не найдена в базе знаний.';
                     }
 
-                    return results.map((hit) => ({
-                        title: hit.content?.title,
-                        text: hit.content?.text.slice(0, 500),
-                        score: hit.score,
+                    return results.map((r: SearchResult) => ({
+                        title: r.title,
+                        text: r.text.slice(0, 500),
+                        score: r.score,
                     }));
                 },
             }),

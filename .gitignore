@@ -50,16 +50,6 @@ routeTree.gen.ts
 .bun/
 bun.lockb
 
-# Media files (generated)
-ai-media/images/*
-ai-media/videos/*
-ai-media/audio/*
-ai-media/previews/*
-!ai-media/images/.gitkeep
-!ai-media/videos/.gitkeep
-!ai-media/audio/.gitkeep
-!ai-media/previews/.gitkeep
-
 # OS
 .DS_Store
 Thumbs.db

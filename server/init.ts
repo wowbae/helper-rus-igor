@@ -6,7 +6,7 @@ import { registerRoutes } from './routes';
 import { startUserBot } from './features/telegram/userbot/init';
 import { Bot } from 'grammy';
 import { handlers } from './features/telegram/bot/handlers/export';
-import { initKnowledgeBase } from './features/ai/knowledge/sync';
+import { loadLocalDocuments } from './features/ai/knowledge/loader';
 import { prisma } from 'prisma/client';
 
 
@@ -104,9 +104,15 @@ async function initAgent() {
             console.log('📝 Создан агент по умолчанию');
         }
 
-        // Инициализируем базу знаний (загрузка файлов + синхронизация с Upstash)
+        // Инициализируем базу знаний (загрузка файлов + создание эмбеддингов)
         if (process.env.SYNC_KNOWLEDGE_ON_START !== 'false') {
-            await initKnowledgeBase(agent.id);
+            const { loaded, skipped, updated, chunks } = await loadLocalDocuments(agent.id);
+            console.log(
+                `📚 Документы: загружено ${loaded}, обновлено ${updated}, пропущено ${skipped}`
+            );
+            if (chunks > 0) {
+                console.log(`🔢 Создано ${chunks} чанков с эмбеддингами`);
+            }
         }
     } catch (error) {
         console.error('Ошибка инициализации агента:', error);
