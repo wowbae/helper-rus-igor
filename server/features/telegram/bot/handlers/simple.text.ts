@@ -27,7 +27,14 @@ textComposer.on('message:text', async (ctx, next) => {
     try {
         // запускаем агента с сохранением истории
         const response = await runAgentWithHistory(text, { userId });
-        await ctx.reply(response);
+        
+        // Пытаемся отправить с Markdown, если ошибка - отправляем без форматирования
+        try {
+            await ctx.reply(response, { parse_mode: 'Markdown' });
+        } catch {
+            // Markdown невалидный - отправляем как есть
+            await ctx.reply(response);
+        }
     } catch (error) {
         console.error('Ошибка агента:', error);
         await ctx.reply('Произошла ошибка при обработке запроса. Попробуйте позже.');

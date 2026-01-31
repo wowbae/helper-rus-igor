@@ -18,5 +18,5 @@ commandsComposer.command('start', async (ctx) => {
         firstName: ctx.from?.first_name || '',
         role: Role.user,
     });
-    ctx.reply('Добро пожаловать в бота!');
+    ctx.reply('Добро пожаловать, чем могу помочь?');
 });
