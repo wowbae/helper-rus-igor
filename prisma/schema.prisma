@@ -1,0 +1,116 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Пользователь (потенциальный клиент)
+model User {
+  id         Int      @id @default(autoincrement())
+  telegramId String   @unique
+  firstName  String?
+  lastName   String?
+  username   String?  // @username в телеграме
+  phone      String?  // Контактный телефон
+  
+  role       Role     @default(user)
+  status     UserStatus @default(new) // Статус в воронке
+  
+  notes      String?  // Заметки о пользователе (потребности, бюджет и тп)
+  purchases  String[] @default([]) // История покупок (что покупал)
+  source     String?  // Откуда пришёл (реклама, органика, реферал)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  // Связи
+  messages   Message[]
+  settings   Settings?
+}
+
+// Сообщения в чате с пользователем
+model Message {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [telegramId], onDelete: Cascade)
+  
+  role      MessageRole // user | assistant
+  content   String
+  
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Настройки AI-агента (один на систему)
+model AgentConfig {
+  id           Int      @id @default(autoincrement())
+  name         String   @default("Помощник")
+  systemPrompt String   // Системный промпт
+  model        String   @default("gpt-4o-mini")
+  temperature  Float    @default(0.7)
+  isActive     Boolean  @default(true)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Связи
+  documents    Document[]
+}
+
+// База знаний агента (FAQ, скрипты, инфо о продукте)
+model Document {
+  id        Int      @id @default(autoincrement())
+  agentId   Int
+  agent     AgentConfig @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  
+  title     String   // Название документа
+  content   String   // Содержимое
+  category  String?  // Категория (faq, product, script, local-file)
+  
+  // Поля для дедупликации локальных файлов
+  filePath    String?  @unique // путь к файлу (docs/agent_knowledge/faq.txt)
+  contentHash String?  @unique // SHA-256 хеш содержимого
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Настройки пользователя
+model Settings {
+  id       Int    @id @default(autoincrement())
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [telegramId], onDelete: Cascade)
+  timeZone String @default("Europe/Moscow")
+}
+
+// Роль сообщения
+enum MessageRole {
+  user
+  assistant
+}
+
+// Статус пользователя в воронке
+enum UserStatus {
+  new        // Новый
+  active     // В диалоге
+  qualified  // Квалифицирован
+  handoff    // Передан менеджеру
+  converted  // Конверсия
+  inactive   // Неактивен
+}
+
+// Роль в системе
+enum Role {
+  user
+  admin
+}
+
+// Роль в AI чате
+enum RoleAi {
+  system
+  user
+  assistant
+}
