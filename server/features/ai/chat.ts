@@ -1,5 +1,5 @@
 import { RoleAi } from '@prisma/client';
-import { aiConfig, type AiModel } from './config';
+import { aiConfig} from './config';
 
 // todo здесь функции из sdk добавить
 
@@ -31,7 +31,7 @@ interface ChatCompletionResponse {
 // Отправка запроса в чат (completion API)
 export async function sendChatRequest(
     messages: ChatMessage[],
-    model: AiModel = 'gpt-4o-mini'
+    model = 'gpt-4o-mini'
 ): Promise<string> {
     const response = await fetch(`${aiConfig.baseURL}/chat/completions`, {
         method: 'POST',

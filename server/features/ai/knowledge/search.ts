@@ -2,6 +2,7 @@
 import { prisma } from 'prisma/client';
 import { embed } from 'ai';
 import { openrouterProvider } from '../provider';
+import { DEFAULT_MODELS } from '../config';
 
 // Интерфейс результата поиска
 export interface SearchResult {
@@ -12,10 +13,10 @@ export interface SearchResult {
     score: number;
 }
 
-// Создание эмбеддинга для текста через OpenRouter (Mistral)
+// Создание эмбеддинга для текста через OpenRouter
 export async function createEmbedding(text: string): Promise<number[]> {
     const { embedding } = await embed({
-        model: openrouterProvider.embedding('mistralai/mistral-embed-2312'),
+        model: openrouterProvider.embedding(DEFAULT_MODELS.embedding),
         value: text,
     });
     return embedding;

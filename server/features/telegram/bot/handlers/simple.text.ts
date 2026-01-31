@@ -21,7 +21,7 @@ textComposer.on('message:text', async (ctx, next) => {
 
     console.log(`handle simple text from ${chatId}`);
 
-    // показываем индикатор набора текста
+    // показываем индикатор набора текста 5 секунд 
     await ctx.replyWithChatAction('typing');
 
     try {

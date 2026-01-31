@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { customOpenAI } from './provider';
 import { searchKnowledge, type SearchResult } from './knowledge/search';
 import { prisma } from 'prisma/client';
-import { getModelName, type AiModelKey } from './config';
+import { getModelName, type AiModelKey, DEFAULT_MODELS, AI_MODEL_MAP } from './config';
 
 // Опции для запуска агента
 interface AgentOptions {
@@ -35,10 +35,10 @@ export async function runAgent(
         agentConfig?.systemPrompt ||
         'Ты умный ассистент. Используй базу знаний для ответов на вопросы пользователя.';
 
-    // Получаем реальное название модели из enum
+    // Получаем реальное название модели из enum (или дефолтную из конфига)
     const modelName = agentConfig?.model 
         ? getModelName(agentConfig.model as AiModelKey) 
-        : 'gpt-4o-mini';
+        : AI_MODEL_MAP[DEFAULT_MODELS.chat];
 
     const { text } = await generateText({
         model: customOpenAI(modelName),

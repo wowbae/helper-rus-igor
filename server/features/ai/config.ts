@@ -1,19 +1,8 @@
-// Конфигурация ассистента
+// Конфигурация AI ассистента
 import 'dotenv/config';
 
-export const aiConfig = {
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: process.env.OPENROUTER_API,
-    model: 'gpt-4o-mini',
-    temperature: 0.7,
-    max_tokens: 150,
-    assistantCode: process.env.ASSISTANT_CODE, // код ассистента из веб-интерфейса
-    maxContext: 20, // количество сообщений для запоминания
-    systemPrompt:
-        'Ты - умный ассистент, который может помогать с различными вопросами, отвечай на том же языке, что и собеседник.',
-};
-
-// Маппинг Prisma enum → реальное название модели для API
+// ============ МОДЕЛИ ============
+// Маппинг Prisma enum → реальное название модели для OpenRouter API
 // Ключи должны совпадать с AiModelEnum из schema.prisma
 export const AI_MODEL_MAP = {
     gpt_4o: 'gpt-4o',
@@ -21,6 +10,27 @@ export const AI_MODEL_MAP = {
     gpt_5_nano: 'gpt-5-nano',
     deepseek_v3_2: 'deepseek/deepseek-v3.2',
 } as const;
+
+// Модели по умолчанию (централизованная настройка)
+export const DEFAULT_MODELS = {
+    // Чат-модель (используется если нет в БД)
+    chat: 'deepseek_v3_2' as keyof typeof AI_MODEL_MAP,
+    // Модель эмбеддингов для RAG
+    embedding: 'mistralai/mistral-embed-2312',
+} as const;
+
+// ============ СИСТЕМНЫЙ ПРОМПТ ============
+export const systemPromptDefault =
+    'Ты - умный ассистент экcперта, который отвечает на вопросы, используя только базу знаний. Попутно твоя задача собирать информацию с пользователя, чтобы предложить ему подходящий продукт из продуктовой линейки. Первый раз предлагай самый дешевый для быстрого закрытия сделки и знакомства с экспертом. Отвечай на том же языке, что и собеседник.';
+
+// ============ КОНФИГУРАЦИЯ ============
+export const aiConfig = {
+    apiKey: process.env.OPENROUTER_API_KEY,
+    baseURL: process.env.OPENROUTER_API,
+    temperature: 0.7,
+    maxContext: 20, // количество сообщений для запоминания
+    systemPrompt: systemPromptDefault,
+};
 
 // Тип для безопасного получения модели
 export type AiModelKey = keyof typeof AI_MODEL_MAP;

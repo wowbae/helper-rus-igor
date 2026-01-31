@@ -8,6 +8,8 @@ import { Bot } from 'grammy';
 import { handlers } from './features/telegram/bot/handlers/export';
 import { loadLocalDocuments } from './features/ai/knowledge/loader';
 import { prisma } from 'prisma/client';
+import { systemPromptDefault, DEFAULT_MODELS, type AiModelKey } from './features/ai/config';
+import type { AiModelEnum } from '@prisma/client';
 
 
 dotenv.config();
@@ -94,10 +96,8 @@ async function initAgent() {
             agent = await prisma.agentConfig.create({
                 data: {
                     name: 'Помощник',
-                    systemPrompt:
-                        'Ты умный ассистент. Используй базу знаний для ответов на вопросы пользователя. Отвечай на том же языке, на котором задан вопрос.',
-                    // модель при создании агента (enum из schema.prisma)
-                    model: 'deepseek_v3_2',
+                    systemPrompt: systemPromptDefault,
+                    model: DEFAULT_MODELS.chat as AiModelEnum,
                     temperature: 0.7,
                     isActive: true,
                 },
